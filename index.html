@@ -44,6 +44,9 @@
   <!-- ===== MAIN WEBSITE (hidden until loader finishes) ===== -->
   <div id="main-page">
 
+    <!-- Mouse Spotlight Effect -->
+    <div id="mouse-spotlight"></div>
+
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top" id="main-navbar">
       <div class="container">
@@ -107,7 +110,134 @@
           </div>
         </section>
 
-    <!-- ABOUT, SKILLS, PROJECTS, CONTACT — added in Step 3 -->
+
+
+        <!-- ====================== ABOUT SECTION ====================== -->
+        <section id="about" class="py-5">
+          <div class="container">
+            <div class="row justify-content-center">
+              <div class="col-lg-10">
+
+                <!-- Section Title -->
+                <div class="text-center mb-5">
+                  <h2 class="display-5 fw-bold">About</h2>
+                  <div class="mx-auto" style="width: 60px; height: 3px; background: var(--accent); border-radius: 3px;"></div>
+                </div>
+
+                <div class="row align-items-center g-5">
+                  
+                  <!-- Left: Text -->
+                  <div class="col-lg-7">
+                    <p class="lead text-secondary fs-5">
+                      I'm a Computer Science student from Karachi, Pakistan, passionate about learning and building things with code.
+                    </p>
+                    <p class="text-secondary">
+                      Currently exploring web development, problem-solving, and how technology can solve real-world problems. 
+                      I enjoy turning ideas into functional digital experiences and am always looking to grow, learn new skills, 
+                      and work on meaningful projects.
+                    </p>
+                  </div>
+
+                  <!-- Right: Photo Card -->
+                  <div class="col-lg-5">
+                    <div class="about-photo-card text-center">
+                      <img src="images/profile-pic.jpg" 
+                          alt="Hussein Hashmi" 
+                          class="img-fluid rounded-circle shadow">
+                      <div class="mt-3">
+                        <h5 class="mb-1">Hussein Hashmi</h5>
+                        <p class="text-secondary mb-0">Computer Science Student</p>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+
+        <!-- ====================== PROJECTS SECTION ====================== -->
+        <section id="projects" class="py-5">
+          <div class="container">
+            <div class="text-center mb-5">
+              <h2 class="display-5 fw-bold">Projects</h2>
+              <div class="mx-auto" style="width: 60px; height: 3px; background: var(--accent); border-radius: 3px;"></div>
+            </div>
+
+            <div class="row g-4" id="projects-container">
+              <!-- Projects will be added here by JavaScript later -->
+              <!-- For now, we'll add 3 sample cards -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ====================== CONTACT SECTION ====================== --><!-- ====================== CONTACT SECTION ====================== -->
+          <section id="contact" class="py-5">
+            <div class="container">
+              <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">Get In Touch</h2>
+                <div class="mx-auto" style="width: 60px; height: 3px; background: var(--accent); border-radius: 3px;"></div>
+              </div>
+
+              <div class="row justify-content-center">
+                <div class="col-lg-8">
+                  <form id="contact-form" class="row g-4">
+                    <div class="col-md-6">
+                      <input 
+                        type="text" 
+                        id="name" 
+                        class="form-control form-control-lg" 
+                        placeholder="Your Name" 
+                        required>
+                    </div>
+                    <div class="col-md-6">
+                      <input 
+                        type="email" 
+                        id="email" 
+                        class="form-control form-control-lg" 
+                        placeholder="Your Email" 
+                        required>
+                    </div>
+                    <div class="col-12">
+                      <textarea 
+                        id="message" 
+                        class="form-control form-control-lg" 
+                        rows="6" 
+                        placeholder="Your Message" 
+                        required></textarea>
+                    </div>
+                    <div class="col-12 text-center">
+                      <button type="submit" id="submit-btn" class="btn btn-primary btn-lg px-5">
+                        Send Message
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ====================== FOOTER ====================== -->
+          <footer class="py-5 border-top" style="border-color: var(--border-color) !important;">
+            <div class="container">
+              <div class="text-center">
+                <p class="mb-1 text-secondary">
+                  © 2026 Hussein Hashmi. All rights reserved.
+                </p>
+                <div class="d-flex justify-content-center gap-4 mt-3">
+                  <a href="#" class="text-secondary text-decoration-none">GitHub</a>
+                  <a href="#" class="text-secondary text-decoration-none">LinkedIn</a>
+                  <a href="#" class="text-secondary text-decoration-none">Twitter</a>
+                </div>
+              </div>
+            </div>
+          </footer>
+
+ 
 
   </div><!-- end #main-page -->
 

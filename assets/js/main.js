@@ -1,116 +1,3 @@
-
-
-// // ================================================================
-// // LOADING SCREEN LOGIC
-
-// // 1. The page loads. The loader is visible, main page is hidden.
-// // 2. We use setInterval() to run a function every 20ms.
-// // 3. Each time it runs, we increase a counter (0 → 100).
-// // 4. We update the bar width and the percentage text.
-// // 5. When counter hits 100, we stop the interval.
-// // 6. We hide the loader (fade out via CSS class).
-// // 7. We show the main page (fade in via CSS class).
-// // ================================================================
-
-// // ----------------------------------------------------------------
-// // Step 1: Grab references to the HTML elements we need to control.
-// //
-// // document.getElementById('x') finds the element with id="x"
-// // and gives us a JavaScript object we can manipulate.
-// // We store them in variables so we don't have to search
-// // for them every single time we need them.
-// // ----------------------------------------------------------------
-// const loader      = document.getElementById('loader');
-// const mainPage    = document.getElementById('main-page');
-// const barFill     = document.getElementById('loader-bar-fill');
-// const loaderNum   = document.getElementById('loader-num');
-
-
-// // ----------------------------------------------------------------
-// // Step 2: Set up our counter variable.
-// // This tracks progress from 0 to 100.
-// // It lives OUTSIDE the interval function so it persists
-// // between each call (if it were inside, it would reset to 0
-// // every 20ms — nothing would ever progress).
-// // ----------------------------------------------------------------
-// let progress = 0;
-
-
-// // ----------------------------------------------------------------
-// // Step 3: The loading interval.
-// //
-// // setInterval(function, milliseconds) calls a function
-// // repeatedly with a pause between each call.
-// // 20ms = 50 calls per second = smooth animation.
-// //
-// // We store the return value in `loadingInterval` so we can
-// // call clearInterval() to STOP it when progress hits 100.
-// // ----------------------------------------------------------------
-// const loadingInterval = setInterval(function() {
-
-//   // --- Increase progress ---
-//   // We don't increase by exactly 1 every time — that would
-//   // look mechanical. Instead we add a random amount between
-//   // 0.5 and 2.5 so it feels natural, like a real loading bar.
-//   progress += Math.random() * 2 + 0.5;
-
-//   // --- Cap at 100 ---
-//   // Math.min() returns the smaller of the two values.
-//   // This prevents progress from ever going above 100.
-//   progress = Math.min(progress, 100);
-
-//   // --- Update the visual bar ---
-//   // We set the CSS width of the fill bar to match the progress.
-//   // CSS transition (defined in style.css) makes it animate smoothly.
-//   barFill.style.width = progress + '%';
-
-//   // --- Update the percentage text ---
-//   // Math.floor() rounds DOWN to the nearest whole number.
-//   // We don't want to show "loading 63.47%" — just "loading 63%".
-//   loaderNum.textContent = Math.floor(progress);
-
-//   // --- Check if we're done ---
-//   if (progress >= 100) {
-
-//     // STOP the interval — no more calls after this
-//     clearInterval(loadingInterval);
-
-//     // Wait 400ms at 100% so the user can SEE it completed
-//     // before we start the exit animation.
-//     // setTimeout(function, delay) runs a function ONCE after a delay.
-//     setTimeout(function() {
-//       finishLoading();
-//     }, 400);
-//   }
-
-// }, 20); // ← runs every 20 milliseconds
-
-
-// // ----------------------------------------------------------------
-// // Step 4: The finish function — hides loader, shows page.
-// // We separate this into its own function to keep the code clean.
-// // A function = a named block of code we can call by name.
-// // ----------------------------------------------------------------
-// function finishLoading() {
-
-//   // Add the CSS class that triggers the fade-out animation.
-//   // Remember in style.css: #loader.loader-hidden { opacity: 0; }
-//   // Adding this class ACTIVATES that rule → smooth fade out.
-//   loader.classList.add('loader-hidden');
-
-//   // Wait for the loader fade-out to finish (0.8s, matching the CSS
-//   // transition duration) THEN show the main page.
-//   setTimeout(function() {
-
-//     // Add the class that makes the main page visible.
-//     // In style.css: #main-page.page-visible { opacity: 1; }
-//     mainPage.classList.add('page-visible');
-
-//   }, 800); // ← 800ms matches the CSS transition: opacity 0.8s
-// }
-
-
-// // ================================================================
 // // EVERYTHING BELOW THIS LINE will be added in future steps:
 // // - loadProjects()    → fetches projects from Supabase
 // // - renderProjects()  → builds project cards in HTML
@@ -168,6 +55,33 @@ function finishLoading() {
         mainPage.classList.add('page-visible');
     }, 800);
 }
+
+
+// ====================== MOUSE SPOTLIGHT WITH DELAY ======================
+
+const spotlight = document.getElementById('mouse-spotlight');
+let mouseX = 50;
+let mouseY = 50;
+let currentX = 50;
+let currentY = 50;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth) * 100;
+  mouseY = (e.clientY / window.innerHeight) * 100;
+});
+
+// Smooth trailing effect (small delay)
+function updateSpotlight() {
+  currentX += (mouseX - currentX) * 0.12;   // 0.12 = delay strength (lower = more delay)
+  currentY += (mouseY - currentY) * 0.12;
+
+  spotlight.style.setProperty('--mouse-x', `${currentX}%`);
+  spotlight.style.setProperty('--mouse-y', `${currentY}%`);
+
+  requestAnimationFrame(updateSpotlight);
+}
+
+updateSpotlight();
 
 
 
@@ -286,4 +200,90 @@ magneticButtons.forEach(btn => {
   btn.addEventListener('mouseleave', () => {
     btn.style.transform = 'translate(0, 0)';
   });
+});
+
+
+
+
+// ====================== PROJECTS SECTION ======================
+
+const projects = [
+  {
+    id: 1,
+    title: "Portfolio Website",
+    description: "My personal portfolio built with HTML, CSS, Bootstrap and JavaScript.",
+    image: "images/project1.jpg",           // change to your actual image
+    link: "#"
+  },
+  {
+    id: 2,
+    title: "Task Manager App",
+    description: "A simple and clean to-do list application with local storage.",
+    image: "images/project2.jpg",
+    link: "#"
+  },
+  {
+    id: 3,
+    title: "Weather Dashboard",
+    description: "Real-time weather app using a public API.",
+    image: "images/project3.jpg",
+    link: "#"
+  }
+];
+
+function renderProjects() {
+  const container = document.getElementById('projects-container');
+  container.innerHTML = '';
+
+  projects.forEach(project => {
+    const cardHTML = `
+      <div class="col-md-6 col-lg-4">
+        <div class="project-card">
+          <img src="${project.image}" alt="${project.title}">
+          <div class="project-overlay">
+            <h5>${project.title}</h5>
+            <p>${project.description}</p>
+            <a href="${project.link}" class="btn btn-primary btn-sm">Visit Project</a>
+          </div>
+        </div>
+      </div>
+    `;
+    container.innerHTML += cardHTML;
+  });
+}
+
+// Call renderProjects after the page is fully loaded
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    renderProjects();
+  }, 1000);
+});
+
+
+
+
+// ====================== CONTACT FORM ======================
+
+const contactForm = document.getElementById('contact-form');
+const submitBtn = document.getElementById('submit-btn');
+
+contactForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  submitBtn.classList.add('loading');
+  submitBtn.disabled = true;
+
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const message = document.getElementById('message').value;
+
+  // For now, just show success message (we'll connect Supabase later)
+  setTimeout(() => {
+    alert(`Thank you, ${name}! Your message has been received.`);
+    
+    // Reset form
+    contactForm.reset();
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+  }, 800);
 });
