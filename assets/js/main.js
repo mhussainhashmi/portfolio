@@ -1,289 +1,191 @@
-// // EVERYTHING BELOW THIS LINE will be added in future steps:
-// // - loadProjects()    → fetches projects from Supabase
-// // - renderProjects()  → builds project cards in HTML
-// // - handleContactForm() → submits the contact form to Supabase
-// // ================================================================
-
-
-
 // ================================================================
-// LOADING SCREEN LOGIC
+// main.js — homepage JavaScript
 // ================================================================
 
-const loader      = document.getElementById('loader');
-const mainPage    = document.getElementById('main-page');
-const barFill     = document.getElementById('loader-bar-fill');
-const loaderNum   = document.getElementById('loader-num');
 
-let progress = 0;                    // Starts at 0
-
-// This controls how fast the bar fills
-// We use a fixed time target (~2.4 seconds) instead of random speed
-const totalDuration = 2000;          // 2000 milliseconds = ~2.4 seconds
-const intervalTime = 20;             // Update every 20ms
-const steps = totalDuration / intervalTime;
-let increment = 100 / steps;         // How much to add each step
+// ── LOADER ──────────────────────────────────────────────────────
+const loader    = document.getElementById('loader');
+const mainPage  = document.getElementById('main-page');
+const barFill   = document.getElementById('loader-bar-fill');
+const loaderNum = document.getElementById('loader-num');
+let progress = 0;
 
 const loadingInterval = setInterval(() => {
+  progress += Math.random() * 2 + 0.5;
+  progress = Math.min(progress, 100);
+  barFill.style.width   = progress + '%';
+  loaderNum.textContent = Math.floor(progress);
+  if (progress >= 100) { clearInterval(loadingInterval); setTimeout(finishLoading, 400); }
+}, 20);
 
-    progress += increment;
-
-    // Safety: never go above 100
-    if (progress > 100) progress = 100;
-
-    // Update the bar width and percentage text
-    barFill.style.width = progress + '%';
-    loaderNum.textContent = Math.floor(progress);
-
-    // When loading is complete
-    if (progress >= 100) {
-        clearInterval(loadingInterval);
-        
-        // Small pause at 100% so it feels complete
-        setTimeout(finishLoading, 300);
-    }
-
-}, intervalTime);
-
-
-// Finish loading and show the actual website
 function finishLoading() {
-    loader.classList.add('loader-hidden');   // Trigger fade-out
-
-    // After fade-out animation finishes, show main content
-    setTimeout(() => {
-        mainPage.classList.add('page-visible');
-    }, 800);
+  loader.classList.add('loader-hidden');
+  setTimeout(() => mainPage.classList.add('page-visible'), 800);
 }
 
 
-// ====================== MOUSE SPOTLIGHT WITH DELAY ======================
-
+// ── MOUSE SPOTLIGHT ─────────────────────────────────────────────
 const spotlight = document.getElementById('mouse-spotlight');
-let mouseX = 50;
-let mouseY = 50;
-let currentX = 50;
-let currentY = 50;
-
+let mouseX = 50, mouseY = 50, currentX = 50, currentY = 50;
 document.addEventListener('mousemove', (e) => {
-  mouseX = (e.clientX / window.innerWidth) * 100;
+  mouseX = (e.clientX / window.innerWidth)  * 100;
   mouseY = (e.clientY / window.innerHeight) * 100;
 });
-
-// Smooth trailing effect (small delay)
 function updateSpotlight() {
-  currentX += (mouseX - currentX) * 0.12;   // 0.12 = delay strength (lower = more delay)
+  currentX += (mouseX - currentX) * 0.12;
   currentY += (mouseY - currentY) * 0.12;
-
   spotlight.style.setProperty('--mouse-x', `${currentX}%`);
   spotlight.style.setProperty('--mouse-y', `${currentY}%`);
-
   requestAnimationFrame(updateSpotlight);
 }
-
 updateSpotlight();
 
 
-
-
-// ====================== DARK / LIGHT MODE ======================
-// Bootstrap reads data-bs-theme="dark" or "light" on <html>
-// and switches ALL its component colors automatically.
-
-// ====================== DARK / LIGHT MODE (with debugging) ======================
-
+// ── DARK / LIGHT MODE ───────────────────────────────────────────
 const themeToggle = document.getElementById('theme-toggle');
-
-console.log("Theme toggle button found:", themeToggle !== null);
-
 function setTheme(isDark) {
-  console.log("setTheme called with isDark =", isDark);
-  
-  if (isDark) {
-    document.documentElement.setAttribute('data-bs-theme', 'dark');
-    themeToggle.textContent = '☀️';
-    console.log("Switched to DARK mode");
-  } else {
-    document.documentElement.setAttribute('data-bs-theme', 'light');
-    themeToggle.textContent = '🌙';
-    console.log("Switched to LIGHT mode");
-  }
-  
+  document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+  themeToggle.textContent = isDark ? '☀️' : '🌙';
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
-
-// Load saved theme or default to dark
-const savedTheme = localStorage.getItem('theme');
-console.log("Saved theme from localStorage:", savedTheme);
-
-if (savedTheme === 'light') {
-  setTheme(false);
-} else {
-  setTheme(true);   // default to dark
-}
-
-// Click handler
+setTheme(localStorage.getItem('theme') !== 'light');
 themeToggle.addEventListener('click', () => {
-  console.log("Theme toggle button clicked");
-  const isCurrentlyDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-  console.log("Current theme is dark:", isCurrentlyDark);
-  setTheme(!isCurrentlyDark);
+  setTheme(document.documentElement.getAttribute('data-bs-theme') !== 'dark');
 });
 
 
-// ====================== TYPING EFFECT IN HERO ======================
-
-const words = [
-  "web experiences",
-  "modern websites",
-  "useful tools",
-  "clean solutions",
-  "digital products"
-];
-
-let wordIndex = 0;
-let charIndex = 0;
-let isDeleting = false;
-const typingText = document.getElementById('typing-text');
-
+// ── TYPING EFFECT ───────────────────────────────────────────────
+const words = ["web experiences","modern websites","useful tools","clean solutions","digital products"];
+let wordIndex = 0, charIndex = 0, isDeleting = false;
+const typingEl = document.getElementById('typing-text');
 function typeEffect() {
-  const currentWord = words[wordIndex];
-  
-  if (isDeleting) {
-    typingText.textContent = currentWord.substring(0, charIndex - 1);
-    charIndex--;
-  } else {
-    typingText.textContent = currentWord.substring(0, charIndex + 1);
-    charIndex++;
+  const word = words[wordIndex];
+  typingEl.textContent = isDeleting ? word.substring(0, charIndex - 1) : word.substring(0, charIndex + 1);
+  charIndex += isDeleting ? -1 : 1;
+  let delay = isDeleting ? 40 : 70;
+  if (!isDeleting && charIndex === word.length)  { delay = 1500; isDeleting = true; }
+  else if (isDeleting && charIndex === 0)         { isDeleting = false; wordIndex = (wordIndex + 1) % words.length; delay = 300; }
+  setTimeout(typeEffect, delay);
+}
+window.addEventListener('load', () => setTimeout(typeEffect, 1000));
+
+
+// ── MAGNETIC BUTTONS ────────────────────────────────────────────
+document.querySelectorAll('.magnetic-btn').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const r = btn.getBoundingClientRect();
+    btn.style.transform = `translate(${(e.clientX - r.left - r.width/2) * 0.2}px, ${(e.clientY - r.top - r.height/2) * 0.2}px)`;
+  });
+  btn.addEventListener('mouseleave', () => btn.style.transform = 'translate(0,0)');
+});
+
+
+// ── LOAD ABOUT SECTION FROM SUPABASE ────────────────────────────
+async function loadAbout() {
+  const { data, error } = await window.supabaseClient
+    .from('about_content')
+    .select('*')
+    .eq('id', 1)
+    .single();
+
+  if (error || !data) return;
+
+  const bioMainEl = document.getElementById('about-bio-main');
+  const bioSubEl  = document.getElementById('about-bio-sub');
+  const photoEl   = document.getElementById('about-photo');
+  const nameEl    = document.getElementById('about-name');
+
+  if (nameEl    && data.heading)  nameEl.textContent    = data.heading;
+  if (bioMainEl && data.bio_main) bioMainEl.textContent = data.bio_main;
+  if (bioSubEl  && data.bio_sub)  bioSubEl.textContent  = data.bio_sub;
+
+  if (photoEl && data.image_url && data.image_url.trim() !== '') {
+    photoEl.src = data.image_url;
   }
-
-  let speed = isDeleting ? 40 : 70;
-
-  // When word is fully typed
-  if (!isDeleting && charIndex === currentWord.length) {
-    speed = 1500;        // Pause at end of word
-    isDeleting = true;
-  } 
-  // When word is fully deleted
-  else if (isDeleting && charIndex === 0) {
-    isDeleting = false;
-    wordIndex = (wordIndex + 1) % words.length;   // Move to next word
-    speed = 300;
-  }
-
-  setTimeout(typeEffect, speed);
 }
 
-// Start the typing effect when page is loaded
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    typeEffect();
-  }, 800);   // Small delay after loader finishes
-});
 
-
-
-// ====================== MAGNETIC BUTTON EFFECT ======================
-
-const magneticButtons = document.querySelectorAll('.magnetic-btn');
-
-magneticButtons.forEach(btn => {
-  btn.addEventListener('mousemove', (e) => {
-    const rect = btn.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    
-    // Move button slightly toward cursor
-    btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-  });
-
-  btn.addEventListener('mouseleave', () => {
-    btn.style.transform = 'translate(0, 0)';
-  });
-});
-
-
-
-
-// ====================== PROJECTS SECTION ======================
-
-const projects = [
-  {
-    id: 1,
-    title: "Portfolio Website",
-    description: "My personal portfolio built with HTML, CSS, Bootstrap and JavaScript.",
-    image: "images/project1.jpg",           // change to your actual image
-    link: "#"
-  },
-  {
-    id: 2,
-    title: "Task Manager App",
-    description: "A simple and clean to-do list application with local storage.",
-    image: "images/project2.jpg",
-    link: "#"
-  },
-  {
-    id: 3,
-    title: "Weather Dashboard",
-    description: "Real-time weather app using a public API.",
-    image: "images/project3.jpg",
-    link: "#"
-  }
-];
-
-function renderProjects() {
+// ── LOAD PROJECTS FROM SUPABASE ─────────────────────────────────
+async function loadProjects() {
   const container = document.getElementById('projects-container');
-  container.innerHTML = '';
+  container.innerHTML = '<p class="text-secondary text-center col-12">Loading projects...</p>';
 
-  projects.forEach(project => {
-    const cardHTML = `
+  const { data: projects, error } = await window.supabaseClient
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.innerHTML = '<p class="text-danger col-12">Failed to load projects.</p>';
+    return;
+  }
+  if (!projects || projects.length === 0) {
+    container.innerHTML = '<p class="text-secondary text-center col-12">No projects yet.</p>';
+    return;
+  }
+
+  container.innerHTML = '';
+  projects.forEach(p => {
+    const liveBtn   = p.live_url   ? `<a href="${p.live_url}"   class="btn btn-primary btn-sm me-2" target="_blank">Visit</a>`  : '';
+    const githubBtn = p.github_url ? `<a href="${p.github_url}" class="btn btn-outline-light btn-sm" target="_blank">GitHub</a>` : '';
+    container.innerHTML += `
       <div class="col-md-6 col-lg-4">
         <div class="project-card">
-          <img src="${project.image}" alt="${project.title}">
+          <img src="${p.image_url || 'https://placehold.co/400x250/0a0f1e/33ccff?text=' + encodeURIComponent(p.title || 'Project')}" alt="${p.title || ''}">
           <div class="project-overlay">
-            <h5>${project.title}</h5>
-            <p>${project.description}</p>
-            <a href="${project.link}" class="btn btn-primary btn-sm">Visit Project</a>
+            <h5>${p.title || ''}</h5>
+            <p>${p.description || ''}</p>
+            <small class="text-secondary d-block mb-3">${p.technologies || ''}</small>
+            <div>${liveBtn}${githubBtn}</div>
           </div>
         </div>
-      </div>
-    `;
-    container.innerHTML += cardHTML;
+      </div>`;
   });
 }
 
-// Call renderProjects after the page is fully loaded
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    renderProjects();
-  }, 1000);
-});
 
-
-
-
-// ====================== CONTACT FORM ======================
-
+// ── CONTACT FORM → SUPABASE ─────────────────────────────────────
 const contactForm = document.getElementById('contact-form');
-const submitBtn = document.getElementById('submit-btn');
+const submitBtn   = document.getElementById('submit-btn');
 
 contactForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const name    = document.getElementById('name').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const message = document.getElementById('message').value.trim();
+  if (!name || !email || !message) { showFormFeedback('Please fill in all fields.', 'danger'); return; }
 
-  submitBtn.classList.add('loading');
   submitBtn.disabled = true;
+  submitBtn.classList.add('loading');
 
-  const name = document.getElementById('name').value;
-  const email = document.getElementById('email').value;
-  const message = document.getElementById('message').value;
+  const { error } = await window.supabaseClient
+    .from('messages')
+    .insert({ name, email, message });
 
-  // For now, just show success message (we'll connect Supabase later)
+  submitBtn.disabled = false;
+  submitBtn.classList.remove('loading');
+
+  if (error) { showFormFeedback('Something went wrong. Please try again.', 'danger'); return; }
+  contactForm.reset();
+  showFormFeedback("Message sent! I'll get back to you soon.", 'success');
+});
+
+function showFormFeedback(text, type) {
+  const existing = document.getElementById('form-feedback');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'form-feedback';
+  el.className = `alert alert-${type} mt-3 text-center`;
+  el.textContent = text;
+  contactForm.after(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+
+// ── INIT — run everything on page load ──────────────────────────
+window.addEventListener('load', () => {
   setTimeout(() => {
-    alert(`Thank you, ${name}! Your message has been received.`);
-    
-    // Reset form
-    contactForm.reset();
-    submitBtn.classList.remove('loading');
-    submitBtn.disabled = false;
-  }, 800);
+    loadAbout();     // fill About section from Supabase
+    loadProjects();  // fill Projects section from Supabase
+  }, 500);
 });
