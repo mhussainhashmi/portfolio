@@ -1,149 +1,166 @@
 /* ================================================================
    style.css
-   PURPOSE: All custom styles for Hussein's portfolio.
-   Bootstrap handles the grid & components.
-   This file handles everything personal: colors, loader,
-   animations, dark/light mode, section styling.
+   Rule: Bootstrap handles layout and components.
+         This file handles personality — colors, animations, custom UI.
 ================================================================ */
 
 
-/* ================================================================
-   CSS VARIABLES — our design system
-   These are like named constants. Instead of typing "#00aaff"
-   50 times, we write var(--accent) and change it in ONE place.
-   The :root selector means "apply these to the whole page".
-================================================================ */
+/* ----------------------------------------------------------------
+   CSS VARIABLES  (:root means "apply to the whole page")
+   Think of these like named constants in programming.
+   var(--accent) is cleaner than repeating "#00aaff" everywhere.
+   Change the value once here → updates everywhere that uses it.
+---------------------------------------------------------------- */
 :root {
-  /* Light mode defaults */
-  --bg-color: #f8f9fa;
-  --bg-mid: #e9ecef;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --accent: #0d6efd;
+  /* Light mode is the default. Dark mode overrides these below. */
+  --bg-color:      #f8f9fa;
+  --bg-mid:        #e9ecef;
+  --text-primary:  #212529;
+  --text-secondary:#6c757d;
+  --accent:        #0d6efd;
   --accent-bright: #0d6efd;
-  --accent-dim: #0b5ed7;
-  --navbar-bg: rgba(248, 249, 250, 0.95);
-  --border-color: rgba(0, 0, 0, 0.1);
+  --accent-dim:    #0b5ed7;
+  --navbar-bg:     rgba(248, 249, 250, 0.95);
+  --border-color:  rgba(0, 0, 0, 0.1);
+
+  /* Loader bar dimensions — defined here so ALL loader CSS can use them.
+     If defined only in @media, they'd be undefined at normal screen sizes. */
+  --bar-width:  340px;
+  --bar-height: 14px;
+  --bar-radius: 999px; /* high value on a short element = pill shape */
 }
 
+/* ----------------------------------------------------------------
+   DARK MODE OVERRIDES
+   Bootstrap reads data-bs-theme="dark" on the <html> tag.
+   When JS sets that attribute, these CSS rules activate and
+   override every variable defined in :root above.
+   This is called "theming with CSS variables."
+---------------------------------------------------------------- */
 [data-bs-theme="dark"] {
-  /* Dark mode overrides */
-  --bg-color: #050810;
-  --bg-mid: #0a0f1e;
-  --text-primary: #ffffff;
-  --text-secondary: #8899bb;
-  --accent: #00aaff;
+  --bg-color:      #050810;
+  --bg-mid:        #0a0f1e;
+  --text-primary:  #ffffff;
+  --text-secondary:#8899bb;
+  --accent:        #00aaff;
   --accent-bright: #33ccff;
-  --accent-dim: #0066aa;
-  --navbar-bg: rgba(5, 8, 16, 0.95);
-  --border-color: rgba(0, 170, 255, 0.15);
+  --accent-dim:    #0066aa;
+  --navbar-bg:     rgba(5, 8, 16, 0.95);
+  --border-color:  rgba(0, 170, 255, 0.15);
 }
 
-/* ================================================================
-   BASE STYLES
-================================================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-}
+/* ----------------------------------------------------------------
+   RESET
+   box-sizing: border-box means padding is INSIDE the element width.
+   Without it: a 300px div + 20px padding = 340px wide. Confusing.
+   With it:    a 300px div + 20px padding = still 300px wide. ✓
+---------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow-x: hidden; }
 
 body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-primary);
+  /* transition makes background/text color change smoothly on theme toggle */
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 
-/* ====================== MOUSE SPOTLIGHT EFFECT ====================== */
+/* ----------------------------------------------------------------
+   MOUSE SPOTLIGHT
+   position: fixed means it stays in place even when scrolling.
+   pointer-events: none means mouse clicks pass right through it.
+   mix-blend-mode: screen makes it blend with what's below it.
+   The actual position is updated by CSS variables --mouse-x/--mouse-y
+   which main.js updates on every mousemove event.
+---------------------------------------------------------------- */
 #mouse-spotlight {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; /* invisible to clicks — doesn't block interactions */
+  z-index: 1;           /* above content but below navbar (z-index: 1000) */
   opacity: 0;
   transition: opacity 0.2s ease;
   mix-blend-mode: screen;
 }
 
-/* Dark Mode - Soft blue glow */
 [data-bs-theme="dark"] #mouse-spotlight {
   background: radial-gradient(
     circle 600px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(100, 201, 255, 0.251) 0%, 
-    rgba(255, 255, 255, 0) 70%
+    rgba(255, 0, 174, 0.217) 0%,
+    rgba(194, 24, 24, 0.055) 70%
   );
 }
 
-/* Light Mode - Very soft warm glow (much more visible) */
 [data-bs-theme="light"] #mouse-spotlight {
   background: radial-gradient(
     circle 500px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 0, 0, 0.788) 0%, 
-    rgba(255, 0, 0, 0) 75%
+    rgba(253, 13, 69, 0.12) 0%,
+    rgba(255, 0, 140, 0) 75%
   );
 }
 
-body:hover #mouse-spotlight {
-  opacity: 1;
-}
+/* Show spotlight only when mouse is inside the page */
+body:hover #mouse-spotlight { opacity: 1; }
 
-/* ================================================================
+
+/* ----------------------------------------------------------------
    NAVBAR
-================================================================ */
+   position: fixed + z-index: 1000 keeps it above everything.
+   backdrop-filter: blur() creates the frosted glass effect.
+   The -webkit- prefix is required for Safari compatibility.
+---------------------------------------------------------------- */
 #main-navbar {
   background-color: var(--navbar-bg);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px); /* Safari */
+  backdrop-filter: blur(12px);          /* Chrome, Firefox, Edge */
   border-bottom: 1px solid var(--border-color);
   z-index: 1000;
 }
 
 .navbar-brand {
-  color: var(--accent-bright) !important;
+  color: var(--accent-bright) !important; /* !important overrides Bootstrap's default */
   font-family: 'Rajdhani', sans-serif;
+  font-size: 1.8rem !important;
   letter-spacing: -2px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
 }
-
-.navbar-brand:hover {
-  color: var(--accent) !important;
-  transform: scale(1.05);
-}
+.navbar-brand:hover { transform: scale(1.05); }
 
 .nav-link {
   color: var(--text-secondary) !important;
   font-weight: 500;
   transition: color 0.3s ease;
 }
+.nav-link:hover, .nav-link.active { color: var(--text-primary) !important; }
 
-.nav-link:hover {
-  color: var(--text-primary) !important;
+#theme-toggle { font-size: 1.5rem; transition: transform 0.4s ease; }
+#theme-toggle:hover { transform: rotate(30deg); }
+
+/* ── MOBILE NAV FIX ──
+   On small screens, the nav links would push the toggle off-screen.
+   We hide the links below 768px and show a stacked layout instead.
+   The hamburger menu Bootstrap provides handles this automatically
+   when we add navbar-expand-lg and navbar-toggler in the HTML. */
+@media (max-width: 767px) {
+  .navbar-nav.flex-row {
+    flex-direction: column !important; /* stack links vertically on mobile */
+    gap: 4px !important;
+  }
+  /* Reduce navbar link font size slightly on small screens */
+  .nav-link { font-size: 0.9rem; }
 }
 
-/* Theme toggle */
-#theme-toggle {
-  transition: transform 0.4s ease;
-  font-size: 1.5rem;
-}
 
-#theme-toggle:hover {
-  transform: rotate(30deg);
-}
-
-/* ====================== HERO SECTION ====================== */
+/* ----------------------------------------------------------------
+   HERO SECTION
+   padding-top: 80px clears the fixed navbar (which is ~70px tall).
+   Without this, the top of your hero text would be hidden behind
+   the navbar when the page first loads.
+---------------------------------------------------------------- */
 .hero-section {
   background: linear-gradient(135deg, var(--bg-color) 0%, var(--bg-mid) 100%);
   min-height: 100vh;
@@ -151,181 +168,49 @@ body:hover #mouse-spotlight {
   align-items: center;
   position: relative;
   overflow: hidden;
+  padding-top: 80px;
 }
 
-.accent-text {
-  color: var(--accent-bright);
-}
+.accent-text   { color: var(--accent-bright); }
+.typing-effect { color: var(--accent); font-weight: 500; }
 
-.typing-effect {
-  color: var(--accent);
-  font-weight: 500;
-}
-
+/* step-end makes the cursor SNAP on/off instead of fading.
+   That's what gives it the authentic blinking cursor feel. */
 .cursor {
   color: var(--accent-bright);
   animation: blink 0.7s step-end infinite;
 }
+@keyframes blink { 50% { opacity: 0; } }
 
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-
-
-
-/* ================================================================
-   LOADER (kept from your original - looks good)
-================================================================ */
-#loader {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
+/* ── MOBILE HERO FIX ──
+   flex-wrap: wrap lets buttons stack into a column on narrow screens
+   instead of shrinking so small they're unreadable. */
+.hero-section .d-flex.gap-3 {
+  flex-wrap: wrap;
   justify-content: center;
-  overflow: hidden;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-  background: radial-gradient(ellipse at center, #236252 0%, #050810 60%, #020408 100%);
 }
-
-#loader.loader-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-#loader-content {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 28px;
-}
-
-#loader-letter {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: clamp(72px, 12vw, 120px);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -2px;
-  text-shadow: 0 0 20px rgba(0, 170, 255, 0.6),
-               0 0 60px rgba(0, 170, 255, 0.3);
-  opacity: 0;
-  transform: translateY(20px);
-  animation: letterAppear 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
-}
-
-@keyframes letterAppear {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#loader-bar-track {
-  width: var(--bar-width);
-  height: var(--bar-height);
-  border-radius: var(--bar-radius);
-  background: rgba(0, 100, 160, 0.15);
-  border: 1px solid rgba(0, 170, 255, 0.25);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 12px rgba(0, 170, 255, 0.15);
-  opacity: 0;
-  animation: fadeIn 0.6s ease 0.8s forwards;
-}
-
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-#loader-bar-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0%;
-  border-radius: var(--bar-radius);
-  background: linear-gradient(90deg, var(--accent-dim) 0%, var(--accent) 60%, var(--accent-bright) 100%);
-  box-shadow: 0 0 6px 1px rgba(255,255,255,0.6),
-              0 0 14px 2px rgba(0,170,255,0.9),
-              0 0 30px 4px rgba(0,170,255,0.6);
-  transition: width 0.05s linear;
-}
-
-#loader-bar-shine {
-  position: absolute;
-  top: 0;
-  left: -60px;
-  width: 60px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  animation: shine 1.8s ease-in-out infinite;
-}
-
-@keyframes shine {
-  0%   { left: -60px; opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { left: calc(var(--bar-width) + 60px); opacity: 0; }
-}
-
-#loader-percent {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: lowercase;
-  color: var(--accent-bright);
-  text-shadow: 0 0 10px rgba(0,170,255,0.8);
-  opacity: 0;
-  animation: fadeIn 0.6s ease 1s forwards;
-}
-
-/* Responsive loader */
 @media (max-width: 480px) {
-  :root {
-    --bar-width: 260px;
-    --bar-height: 10px;
-  }
-}
-
-/* Make buttons smaller and better on mobile */
-@media (max-width: 576px) {
-  .btn-lg {
-    padding: 10px 24px !important;
-    font-size: 1rem !important;
-  }
+  .hero-section .btn { width: 100%; text-align: center; } /* full width on tiny phones */
 }
 
 
-
-
-
-/* ====================== MAGNETIC BUTTONS ====================== */
+/* ----------------------------------------------------------------
+   MAGNETIC BUTTONS
+   transition: transform is what makes the magnetic movement smooth.
+   The actual transform values are set by JavaScript on mousemove.
+---------------------------------------------------------------- */
 .magnetic-btn {
   position: relative;
   overflow: hidden;
-  border-radius: 50px;           /* Rounded pill shape */
-  transition: all 0.2s ease;
+  border-radius: 50px;
+  transition: transform 0.15s ease;
   font-weight: 500;
 }
-
 .magnetic-btn:hover {
-  transform: scale(1.05);
   box-shadow: 0 10px 25px rgba(0, 170, 255, 0.3);
 }
 
-/* Magnetic effect using JS (added in main.js) */
-.magnetic-btn {
-  transition: transform 0.15s ease;
-}
-
-/* ====================== BUTTONS ====================== */
-
-/* Primary Button - "View My Projects" */
+/* Primary button — "View My Projects" */
 .btn-primary {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -333,8 +218,8 @@ body:hover #mouse-spotlight {
   border-radius: 50px;
   padding: 12px 32px;
   font-weight: 500;
+  transition: all 0.3s ease;
 }
-
 .btn-primary:hover {
   background-color: var(--accent-bright);
   border-color: var(--accent-bright);
@@ -342,7 +227,7 @@ body:hover #mouse-spotlight {
   transform: translateY(-2px);
 }
 
-/* Outline Button - "Get In Touch" */
+/* Outline button — "Get In Touch" */
 .btn-outline-light {
   border: 2px solid var(--text-primary);
   color: var(--text-primary);
@@ -352,26 +237,16 @@ body:hover #mouse-spotlight {
   font-weight: 500;
   transition: all 0.3s ease;
 }
-
 .btn-outline-light:hover {
   background-color: var(--text-primary);
-  color: var(--bg-color);           /* This ensures text is always readable */
-  border-color: var(--text-primary);
+  color: var(--bg-color); /* ensures text stays readable in both modes */
   transform: translateY(-2px);
 }
 
-/* Make sure it works in both modes */
-[data-bs-theme="dark"] .btn-outline-light:hover {
-  color: var(--bg-color);           /* white text on dark becomes dark text on white */
-}
 
-[data-bs-theme="light"] .btn-outline-light:hover {
-  color: var(--bg-color);
-}
-
-
-
-/* ====================== ABOUT SECTION ====================== */
+/* ----------------------------------------------------------------
+   ABOUT SECTION
+---------------------------------------------------------------- */
 .about-photo-card {
   background-color: var(--bg-mid);
   border-radius: 20px;
@@ -380,113 +255,248 @@ body:hover #mouse-spotlight {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
-
-.about-photo-card:hover {
-  transform: translateY(-8px);
-}
-
+.about-photo-card:hover { transform: translateY(-8px); }
 .about-photo-card img {
-  width: 180px;
-  height: 180px;
-  object-fit: cover;
+  width: 180px; height: 180px;
+  object-fit: cover;          /* crops image to fill the circle without stretching */
   border: 6px solid var(--accent);
 }
 
-@media (max-width: 992px) {
-  .about-photo-card {
-    margin-top: 30px;
-  }
-}
 
-
-
-/* ====================== PROJECTS SECTION ====================== */
+/* ----------------------------------------------------------------
+   PROJECT CARDS
+   The hover reveal effect works like this:
+   1. .project-overlay starts at opacity: 0 (invisible)
+   2. When .project-card is hovered, .project-overlay gets opacity: 1
+   3. The img fades to opacity: 0.25 (dimmed) so text is readable
+   4. CSS transition handles the smooth fade between states
+---------------------------------------------------------------- */
 .project-card {
   height: 320px;
   border-radius: 16px;
-  overflow: hidden;
-  position: relative;
+  overflow: hidden;   /* clips the image and overlay to the card's rounded corners */
+  position: relative; /* needed so .project-overlay (position:absolute) stays inside */
   cursor: pointer;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
-
 .project-card:hover {
   transform: translateY(-12px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
-
 .project-card img {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   transition: opacity 0.5s ease;
 }
+.project-card:hover img { opacity: 0.25; }
 
-.project-card:hover img {
-  opacity: 0.25;
-}
-
-/* Overlay that appears on hover */
 .project-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  position: absolute; /* takes it out of normal flow, positions inside .project-card */
+  inset: 0;           /* shorthand: top:0 right:0 bottom:0 left:0 — fills the card */
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-end; /* pushes content to the bottom */
   padding: 30px;
   color: white;
   opacity: 0;
   transition: opacity 0.4s ease;
 }
-
-.project-card:hover .project-overlay {
-  opacity: 1;
-}
-
-.project-overlay h5 {
-  margin-bottom: 8px;
-  font-size: 1.25rem;
-}
-
-.project-overlay p {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  margin-bottom: 16px;
-}
-
-.project-overlay .btn {
-  align-self: flex-start;
-  border-radius: 50px;
-  padding: 8px 24px;
-  font-size: 0.9rem;
-}
+.project-card:hover .project-overlay { opacity: 1; }
+.project-overlay h5 { margin-bottom: 8px; font-size: 1.25rem; }
+.project-overlay p  { font-size: 0.95rem; opacity: 0.9; margin-bottom: 16px; }
+.project-overlay .btn { align-self: flex-start; border-radius: 50px; padding: 8px 24px; font-size: 0.9rem; }
 
 
-
-/* ====================== CONTACT SECTION ====================== */
-#contact {
-  background-color: var(--bg-mid);
-}
+/* ----------------------------------------------------------------
+   CONTACT SECTION
+   The form inputs inherit background/color from CSS variables
+   so they automatically look correct in both light and dark mode.
+---------------------------------------------------------------- */
+#contact { background-color: var(--bg-mid); }
 
 #contact-form .form-control {
   background-color: var(--bg-color);
   border: 2px solid rgba(0, 170, 255, 0.2);
   color: var(--text-primary);
 }
-
 #contact-form .form-control:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 0.2rem rgba(0, 170, 255, 0.15);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
 }
 
-/* Submit button loading state */
-#submit-btn.loading {
-  pointer-events: none;
-  opacity: 0.8;
+/* Loading state on submit button — JS adds/removes the .loading class */
+#submit-btn.loading { pointer-events: none; opacity: 0.8; }
+#submit-btn.loading::after { content: " Sending..."; } /* appends text visually */
+
+
+/* ----------------------------------------------------------------
+   FOOTER
+---------------------------------------------------------------- */
+footer a:hover { color: var(--accent) !important; }
+
+
+/* ================================================================
+   LOADER
+   This entire section is a full-screen overlay (z-index: 9999)
+   that sits on top of everything until the JS removes it.
+================================================================ */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* These two properties transition when JS adds .loader-hidden */
+  transition: opacity 0.8s ease, visibility 0.8s ease;
 }
 
-#submit-btn.loading::after {
-  content: " Sending...";
+/* JS adds this class when bar reaches 100% → triggers the fade-out */
+#loader.loader-hidden {
+  opacity: 0;
+  visibility: hidden;   /* removes it from keyboard tab order too */
+  pointer-events: none; /* stops it blocking clicks on the page below */
+}
+
+/* Radial glow: deep navy center fading to near-black edges */
+#loader-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    #0d1530 0%,   /* deep navy in the center */
+    #050810 60%,
+    #020408 100%  /* near-black at the very edges */
+  );
+}
+
+/* Stacks H. + bar + percentage text vertically in the center */
+#loader-content {
+  position: relative; /* sits above #loader-bg (z-index stacking) */
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+/* The "H." letter
+   clamp(min, preferred, max) = responsive font size.
+   It tries to be 12% of the viewport width, but never
+   smaller than 72px or bigger than 120px. */
+#loader-letter {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(72px, 12vw, 120px);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -2px;
+  /* Layered text-shadows build the neon halo.
+     Each shadow is bigger and more transparent than the one inside it. */
+  text-shadow:
+    0 0 20px  rgba(0, 170, 255, 0.6),
+    0 0 60px  rgba(0, 170, 255, 0.3),
+    0 0 100px rgba(0, 170, 255, 0.15);
+  opacity: 0;
+  transform: translateY(20px); /* starts 20px below final position */
+  /* "forwards" = stay at the end state (opacity:1, translateY:0) after animating */
+  animation: letterAppear 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+
+@keyframes letterAppear {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* The outer "track" — the dark pill that the fill bar sits inside */
+#loader-bar-track {
+  width: var(--bar-width);
+  height: var(--bar-height);
+  border-radius: var(--bar-radius);
+  position: relative;
+  overflow: hidden; /* clips fill bar and shine streak to the pill shape */
+  background: rgba(0, 100, 160, 0.15);
+  border: 1px solid rgba(0, 170, 255, 0.25);
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.15), inset 0 0 8px rgba(0,0,0,0.4);
+  opacity: 0;
+  animation: fadeIn 0.6s ease 0.8s forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* The glowing fill — JS updates width: 0% → 100%
+   box-shadow with multiple layers creates the neon tube effect:
+   tight white core → bright blue halo → wide soft bloom */
+#loader-bar-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: 0%; /* JavaScript changes this value every 20ms */
+  border-radius: var(--bar-radius);
+  background: linear-gradient(90deg, #0066aa 0%, #00aaff 60%, #33ccff 100%);
+  box-shadow:
+    0 0 6px  1px rgba(255, 255, 255, 0.6),  /* tight white core */
+    0 0 14px 2px rgba(0, 170, 255, 0.9),    /* bright blue */
+    0 0 30px 4px rgba(0, 170, 255, 0.6),    /* medium bloom */
+    0 0 60px 6px rgba(0, 170, 255, 0.3);    /* wide soft glow */
+  transition: width 0.05s linear;
+}
+
+/* Decorative shine streak that sweeps left-to-right continuously */
+#loader-bar-shine {
+  position: absolute;
+  top: 0; left: -60px; /* starts off-screen to the left */
+  width: 60px; height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: shine 1.8s ease-in-out infinite;
+}
+@keyframes shine {
+  0%   { left: -60px; opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { left: calc(var(--bar-width) + 60px); opacity: 0; }
+}
+
+/* "loading 63%" text */
+#loader-percent {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #33ccff;
+  text-shadow: 0 0 10px rgba(0,170,255,0.8), 0 0 20px rgba(0,170,255,0.4);
+  opacity: 0;
+  animation: fadeIn 0.6s ease 1s forwards;
+}
+
+
+/* ================================================================
+   MAIN PAGE
+   Starts invisible (opacity:0). JS adds .page-visible after the
+   loader fades out, which transitions it to opacity:1.
+================================================================ */
+#main-page { opacity: 0; transition: opacity 0.8s ease; min-height: 100vh; }
+#main-page.page-visible { opacity: 1; }
+
+
+/* ================================================================
+   RESPONSIVE BREAKPOINTS
+================================================================ */
+/* Smaller loading bar on phones */
+@media (max-width: 480px) {
+  :root { --bar-width: 260px; --bar-height: 10px; }
+}
+
+/* Slightly smaller buttons on mobile */
+@media (max-width: 576px) {
+  .btn-lg { padding: 10px 24px !important; font-size: 1rem !important; }
+}
+
+/* Stack about photo below text on tablets */
+@media (max-width: 992px) {
+  .about-photo-card { margin-top: 30px; }
 }
