@@ -98,7 +98,7 @@ body {
 [data-bs-theme="light"] #mouse-spotlight {
   background: radial-gradient(
     circle 500px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(253, 13, 69, 0.12) 0%,
+    rgba(253, 13, 69, 0.909) 0%,
     rgba(255, 0, 140, 0) 75%
   );
 }
